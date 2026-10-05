@@ -1,7 +1,0 @@
-{
-  "functions": {
-    "api/save-work-order.js": {
-      "maxDuration": 30
-    }
-  }
-}
