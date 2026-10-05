@@ -169,8 +169,11 @@ $("back").addEventListener("click",function(){S.done="";save();$("report").hidde
 function fresh(){if(S.done||confirm("Discard this work order and start a new one?")){S={unit:"",tenant:"",request:"",pre:"",post:"",sig:"",notes:"",done:""};save();$("report").hidden=true;$("form").hidden=false;render()}}
 $("reset").addEventListener("click",fresh);$("new").addEventListener("click",fresh);
 
-try{localStorage.removeItem(KEY)}catch(e){}
-load();render();
+// Start with a completely fresh work order on every page load/refresh.
+// sessionStorage normally survives a refresh, so explicitly clear this app's draft.
+try{sessionStorage.removeItem(KEY)}catch(e){}
+S={unit:"",tenant:"",request:"",pre:"",post:"",sig:"",notes:"",done:""};
+render();
 </script>
 </body>
 </html>
