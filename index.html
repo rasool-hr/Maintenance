@@ -97,8 +97,8 @@ textarea{min-height:140px;resize:vertical}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-var SUPABASE_URL="YOUR_SUPABASE_URL";
-var SUPABASE_ANON_KEY="YOUR_SUPABASE_ANON_KEY";
+var SUPABASE_URL="https://vzmcvransiiemqvfduly.supabase.co";
+var SUPABASE_ANON_KEY="sb_publishable_99gqOk0yfeNyNBMD47_Q4w_W9zUYUCR";
 var supabaseClient=(SUPABASE_URL.indexOf("YOUR_")===0||SUPABASE_ANON_KEY.indexOf("YOUR_")===0)?null:supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 var KEY="workorder-v1", S={unit:"",tenant:"",request:"",pre:"",post:"",sig:"",notes:"",done:""};
 function load(){try{var v=sessionStorage.getItem(KEY);if(v)S=Object.assign(S,JSON.parse(v))}catch(e){}}
