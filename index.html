@@ -97,8 +97,8 @@ textarea{min-height:140px;resize:vertical}
 
 <script>
 var KEY="workorder-v1", S={unit:"",tenant:"",request:"",pre:"",post:"",sig:"",notes:"",done:""};
-function load(){try{var v=localStorage.getItem(KEY);if(v)S=Object.assign(S,JSON.parse(v))}catch(e){}}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){alert("Storage is full. Start a new order.")}}
+function load(){try{var v=sessionStorage.getItem(KEY);if(v)S=Object.assign(S,JSON.parse(v))}catch(e){}}
+function save(){try{sessionStorage.setItem(KEY,JSON.stringify(S))}catch(e){alert("Storage is full. Start a new order.")}}
 var $=function(id){return document.getElementById(id)};
 
 function tile(id,val,kind){
@@ -169,6 +169,7 @@ $("back").addEventListener("click",function(){S.done="";save();$("report").hidde
 function fresh(){if(S.done||confirm("Discard this work order and start a new one?")){S={unit:"",tenant:"",request:"",pre:"",post:"",sig:"",notes:"",done:""};save();$("report").hidden=true;$("form").hidden=false;render()}}
 $("reset").addEventListener("click",fresh);$("new").addEventListener("click",fresh);
 
+try{localStorage.removeItem(KEY)}catch(e){}
 load();render();
 </script>
 </body>
