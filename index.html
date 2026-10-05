@@ -95,11 +95,8 @@ textarea{min-height:140px;resize:vertical}
   <div class="row"><button class="btn" id="notes-cancel">Cancel</button><button class="btn p" id="notes-save">Save notes</button></div>
 </div></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-var SUPABASE_URL="https://vzmcvransiiemqvfduly.supabase.co";
-var SUPABASE_ANON_KEY="sb_publishable_99gqOk0yfeNyNBMD47_Q4w_W9zUYUCR";
-var supabaseClient=(SUPABASE_URL.indexOf("YOUR_")===0||SUPABASE_ANON_KEY.indexOf("YOUR_")===0)?null:supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+var SAVE_API_URL="https://YOUR-VERCEL-PROJECT.vercel.app/api/save-work-order";
 var KEY="workorder-v1", S={unit:"",tenant:"",request:"",pre:"",post:"",sig:"",notes:"",done:""};
 function load(){try{var v=sessionStorage.getItem(KEY);if(v)S=Object.assign(S,JSON.parse(v))}catch(e){}}
 function save(){try{sessionStorage.setItem(KEY,JSON.stringify(S))}catch(e){alert("Storage is full. Start a new order.")}}
@@ -167,49 +164,54 @@ $("t-notes").addEventListener("click",function(){$("notes-text").value=S.notes;$
 $("notes-cancel").addEventListener("click",function(){$("notes-sheet").classList.remove("open")});
 $("notes-save").addEventListener("click",function(){S.notes=$("notes-text").value.trim();save();$("notes-sheet").classList.remove("open");render()});
 
-async function dataUrlToBlob(dataUrl){
-  var r=await fetch(dataUrl);return await r.blob();
-}
-async function uploadDataUrl(path,dataUrl,contentType){
-  if(!supabaseClient) throw new Error("Supabase is not configured yet.");
-  var blob=await dataUrlToBlob(dataUrl);
-  var res=await supabaseClient.storage.from("maintenance-files").upload(path,blob,{contentType:contentType,upsert:false});
-  if(res.error) throw res.error;
-  return res.data.path;
-}
 async function saveCompletedOrder(){
-  if(!supabaseClient){alert("Supabase is not configured yet. Add your project URL and anon key in the HTML file first.");return false;}
+  if(SAVE_API_URL.indexOf("YOUR-VERCEL-PROJECT")!==-1){
+    throw new Error("Set SAVE_API_URL in index.html to your Vercel API URL first.");
+  }
+  var completedAt=new Date().toISOString();
   var payload={
-    property_unit:S.unit||null,
-    tenant_name:S.tenant||null,
-    maintenance_request:S.request||null,
-    notes:S.notes||null,
-    status:"completed",
-    completed_at:new Date().toISOString()
+    property_unit:S.unit||"",
+    tenant_name:S.tenant||"",
+    maintenance_request:S.request||"",
+    notes:S.notes||"",
+    completed_at:completedAt,
+    pre_photo:S.pre,
+    post_photo:S.post,
+    signature:S.sig
   };
-  var ins=await supabaseClient.from("maintenance_requests").insert(payload).select("id").single();
-  if(ins.error) throw ins.error;
-  var id=ins.data.id,base="work-orders/"+id+"/";
-  var prePath=await uploadDataUrl(base+"pre.jpg",S.pre,"image/jpeg");
-  var postPath=await uploadDataUrl(base+"post.jpg",S.post,"image/jpeg");
-  var sigPath=await uploadDataUrl(base+"signature.png",S.sig,"image/png");
-  var upd=await supabaseClient.from("maintenance_requests").update({pre_photo_path:prePath,post_photo_path:postPath,signature_path:sigPath}).eq("id",id);
-  if(upd.error) throw upd.error;
-  S.done=payload.completed_at;save();return true;
+  var r=await fetch(SAVE_API_URL,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(payload)
+  });
+  var out={};
+  try{out=await r.json()}catch(e){}
+  if(!r.ok)throw new Error(out.error||("Server returned "+r.status));
+  S.done=completedAt;save();
+  return out;
 }
 
 /* Finish */
 $("finish").addEventListener("click",async function(){
-  var btn=$("finish"),oldText=btn.textContent;btn.disabled=true;btn.textContent="Saving...";
-  try{var ok=await saveCompletedOrder();if(ok)showReport();}
-  catch(e){console.error(e);alert("Could not save this work order: "+(e.message||e));}
-  finally{btn.textContent=oldText;render();}
+  var btn=$("finish"),old=btn.textContent;
+  btn.disabled=true;btn.textContent="Saving to GitHub...";
+  try{
+    var out=await saveCompletedOrder();
+    showReport();
+    $("r-time").textContent="Completed "+new Date(S.done).toLocaleString()+" • "+(out.work_order_id||"Saved to GitHub");
+  }catch(e){
+    console.error(e);
+    alert("Could not save this work order: "+(e.message||e));
+  }finally{
+    btn.textContent=old;render();
+  }
 });
 $("back").addEventListener("click",function(){S.done="";save();$("report").hidden=true;$("form").hidden=false;render()});
 function fresh(){if(S.done||confirm("Discard this work order and start a new one?")){S={unit:"",tenant:"",request:"",pre:"",post:"",sig:"",notes:"",done:""};save();$("report").hidden=true;$("form").hidden=false;render()}}
 $("reset").addEventListener("click",fresh);$("new").addEventListener("click",fresh);
 
-try{localStorage.removeItem(KEY)}catch(e){}
+// Start with a completely fresh work order on every page load/refresh.
+// sessionStorage normally survives a refresh, so explicitly clear this app's draft.
 try{sessionStorage.removeItem(KEY)}catch(e){}
 S={unit:"",tenant:"",request:"",pre:"",post:"",sig:"",notes:"",done:""};
 render();
