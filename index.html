@@ -6,10 +6,10 @@
 <title>Work Order</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap">
 <style>
-:root{--bg:#eceff1;--card:#fff;--ink:#17202a;--mute:#5d6b78;--line:#cfd6dc;--amber:#f5b301;--amber-ink:#17202a;--ok:#1f8a4c;
+:root{--bg:#eceff1;--card:#fff;--ink:#17202a;--mute:#5d6b78;--line:#cfd6dc;--amber:#f5b301;--amber-ink:#17202a;--ok:#1f8a4c;--red:#d63a3a;--grn:#1f8a4c;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12171c;--card:#1c242c;--ink:#eef2f5;--mute:#9aa8b4;--line:#33404b;--ok:#4cc17f}}
-:root[data-theme="dark"]{--bg:#12171c;--card:#1c242c;--ink:#eef2f5;--mute:#9aa8b4;--line:#33404b;--ok:#4cc17f}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12171c;--card:#1c242c;--ink:#eef2f5;--mute:#9aa8b4;--line:#33404b;--ok:#4cc17f;--red:#ff6b6b;--grn:#4cc17f}}
+:root[data-theme="dark"]{--bg:#12171c;--card:#1c242c;--ink:#eef2f5;--mute:#9aa8b4;--line:#33404b;--ok:#4cc17f;--red:#ff6b6b;--grn:#4cc17f}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *,*::before,*::after{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:500 16px/1.4 Barlow,system-ui,sans-serif}
@@ -20,15 +20,16 @@ label{font-size:14px;color:var(--mute);display:block;margin-bottom:4px}
 input[type=text],textarea{width:100%;font:inherit;color:var(--ink);background:var(--card);border:2px solid var(--line);border-radius:6px;padding:12px}
 input[type=text]:focus,textarea:focus,button:focus-visible{outline:3px solid var(--amber);outline-offset:1px}
 .tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.tile{position:relative;min-height:150px;border:2px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink);font:inherit;text-align:left;padding:12px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;overflow:hidden}
-.tile .name{font:700 22px/1.05 "Barlow Condensed","Arial Narrow",sans-serif}
-.tile .state{font-size:14px;color:var(--mute)}
-.tile.done{border-color:var(--ok)}
-.tile.done .state{color:var(--ok);font-weight:600}
-.tile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.9}
-.tile.has-img .name,.tile.has-img .state{position:relative;background:var(--card);padding:2px 6px;border-radius:4px;align-self:flex-start}
-.tile.has-img .state{margin-top:auto}
-.tile .sig{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:8px;background:#fff}
+.tile{position:relative;border:2px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font:inherit;padding:10px;display:flex;flex-direction:column;gap:8px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.tile:active{transform:scale(.97)}
+#t-pre{--c:var(--red)}#t-post{--c:var(--grn)}#t-sig,#t-notes{--c:var(--ink)}
+.face{position:relative;height:110px;border-radius:6px;display:grid;place-items:center;overflow:hidden;color:var(--c);background:color-mix(in srgb,var(--c) 10%,transparent)}
+.face svg{width:68px;height:68px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.face img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.face img.sig{object-fit:contain;background:#fff;padding:6px}
+.lbl{font:700 20px/1 "Barlow Condensed","Arial Narrow",sans-serif;text-align:center;color:var(--c)}
+.tile.done{border-color:var(--grn)}
+.tile.done::after{content:"\2713";position:absolute;top:-8px;right:-8px;width:26px;height:26px;border-radius:50%;background:var(--grn);color:#fff;display:grid;place-items:center;font:700 16px Barlow,sans-serif}
 .go{margin-top:18px;width:100%;border:0;border-radius:6px;background:var(--amber);color:var(--amber-ink);font:700 22px "Barlow Condensed","Arial Narrow",sans-serif;padding:16px;cursor:pointer}
 .go[disabled]{background:var(--line);color:var(--mute);cursor:not-allowed}
 .hint{color:var(--mute);font-size:14px;margin:8px 0 0;text-align:center}
@@ -56,10 +57,10 @@ textarea{min-height:140px;resize:vertical}
     <div><label for="tenant">Tenant name</label><input id="tenant" type="text" placeholder="e.g. J. Rivera" autocomplete="off"></div>
   </div>
   <div class="tiles">
-    <button class="tile" id="t-pre"><span class="name">Pre-photo</span><span class="state">Take photo</span></button>
-    <button class="tile" id="t-post"><span class="name">Post-photo</span><span class="state">Take photo</span></button>
-    <button class="tile" id="t-sig"><span class="name">Signature of tenant</span><span class="state">Not signed</span></button>
-    <button class="tile" id="t-notes"><span class="name">Notes</span><span class="state">No notes</span></button>
+    <button class="tile" id="t-pre" aria-label="Before photo"><span class="face"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H4M10 5l-7 7 7 7"/></svg></span><span class="lbl">Before</span></button>
+    <button class="tile" id="t-post" aria-label="After photo"><span class="face"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16M14 5l7 7-7 7"/></svg></span><span class="lbl">After</span></button>
+    <button class="tile" id="t-sig" aria-label="Tenant signature"><span class="face"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 3l5 5L8 21H3v-5z"/><path d="M13 6l5 5"/><path d="M13 22h8"/></svg></span><span class="lbl">Signature</span></button>
+    <button class="tile" id="t-notes" aria-label="Notes"><span class="face"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></span><span class="lbl">Notes</span></button>
   </div>
   <button class="go" id="finish" disabled>Complete work order</button>
   <p class="hint" id="hint">Finish all four steps to complete.</p>
@@ -97,20 +98,16 @@ function load(){try{var v=localStorage.getItem(KEY);if(v)S=Object.assign(S,JSON.
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){alert("Storage is full. Start a new order.")}}
 var $=function(id){return document.getElementById(id)};
 
-function tile(id,val,doneText,emptyText,kind){
-  var t=$(id),st=t.querySelector(".state");
-  var old=t.querySelector("img");if(old)old.remove();
-  t.classList.toggle("done",!!val);t.classList.toggle("has-img",!!val&&kind!=="text");
-  if(val&&kind){var im=document.createElement("img");im.src=val;im.alt="";if(kind==="sig")im.className="sig";t.insertBefore(im,t.firstChild)}
-  st.textContent=val?doneText:emptyText;
+function tile(id,val,kind){
+  var t=$(id),f=t.querySelector(".face"),old=f.querySelector("img");
+  if(old)old.remove();
+  t.classList.toggle("done",!!val);
+  if(val&&kind){var im=document.createElement("img");im.src=val;im.alt="";if(kind==="sig")im.className="sig";f.appendChild(im)}
 }
 function render(){
   $("unit").value=S.unit;$("tenant").value=S.tenant;
-  tile("t-pre",S.pre,"Done. Tap to retake","Take photo","img");
-  tile("t-post",S.post,"Done. Tap to retake","Take photo","img");
-  tile("t-sig",S.sig,"Signed. Tap to redo","Not signed","sig");
-  tile("t-notes",S.notes,"Saved. Tap to edit","No notes","text");
-  var left=[["pre","pre-photo"],["post","post-photo"],["sig","signature"],["notes","notes"]].filter(function(p){return !S[p[0]]}).map(function(p){return p[1]});
+  tile("t-pre",S.pre,"img");tile("t-post",S.post,"img");tile("t-sig",S.sig,"sig");tile("t-notes",S.notes,"");
+  var left=[["pre","before photo"],["post","after photo"],["sig","signature"],["notes","notes"]].filter(function(p){return !S[p[0]]}).map(function(p){return p[1]});
   $("finish").disabled=left.length>0;
   $("hint").textContent=left.length?"Still needed: "+left.join(", ")+".":"Ready to complete.";
   $("hint").hidden=false;
